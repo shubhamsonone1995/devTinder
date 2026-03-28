@@ -1,0 +1,3 @@
+-initialize the repo
+-install express
+-make request handler 

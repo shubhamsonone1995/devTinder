@@ -1,13 +1,12 @@
-const express=require("express");
+const express = require("express");
 
-const app=express();
+const app = express();
+const { userAuth } = require("./middlewares/auth")
 
-app.use("/",(req,res)=>{
-res.send("Hello From the sever!!!!")
+app.use("/home", userAuth, (req, res, next) => {
+    //this function is treated as route handler bcs its send the request to the client or terminate the chain.
+    res.send("Hello From the home from route handler !!!!")
 })
-app.use("/test",(req,res)=>{
-res.send("Hello From the test sever!!!!")
-})
-app.listen(3000,()=>{
+app.listen(3000, () => {
     console.log("Server is successfully listning onport 3000")
 })

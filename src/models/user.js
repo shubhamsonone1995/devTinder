@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const jwt = require('jsonwebtoken');
+const bcrypt = require("bcrypt")
 
 const userSchema = new mongoose.Schema({
     firstName: {
@@ -23,12 +25,12 @@ const userSchema = new mongoose.Schema({
             }
         }
     },
-    passward: {
+    password: {
         type: String,
         required: true,
-         validate: (value) => {
+        validate: (value) => {
             if (!validator.isStrongPassword(value)) {
-                throw new Error("Please enter a strong passward: " + value)
+                throw new Error("Please enter a strong password: " + value)
             }
         }
     },
@@ -36,8 +38,46 @@ const userSchema = new mongoose.Schema({
         type: String
     },
     gender: {
-        type: String
-    }
+        type: String,
+        enum: {
+            values: ['male', 'female', 'others']
+        },
+        validate: (value) => {
+            if (!['male', 'female', 'others'].includes(value)) {
+                throw new Error("Gender data is not valid")
+            }
+        }
+    },
+    photoUrl: {
+        type: String,
+        validate: (value) => {
+            if (!validator.isURL(value)) {
+                throw new Error("Invalid Photo URL: " + value)
+            }
+        }
+    },
+    about: {
+        type: String,
+
+    },
+    skills: {
+        type: [String]
+    },
 }, { timestamps: true });
+
+userSchema.methods.getJWT = async function () {
+    const user = this;
+    const token = jwt.sign({ _id: user._id }, 'dev@Tinder$770', { expiresIn: '1d' });
+
+    return token;
+}
+
+userSchema.methods.validatePassword = async function (passwordInputByUser) {
+    const user = this;
+    const passwardHash = user.password
+
+    const isPasswardValid = await bcrypt.compare(passwordInputByUser, passwardHash)
+    return isPasswardValid;
+}
 
 module.exports = mongoose.model('User', userSchema)
